@@ -13,13 +13,13 @@ using TinyServer.Schemas;
 public class NewBehaviourScript : MonoBehaviour {
 
 	// Use this for initialization
-	void Start () {
-
+	void Start () 
+	{
 		Debug.Log(ServerService.GetInstance().Request("init?account_name=xbb"));
 	}
 	
 	// Update is called once per frame
-	void Update () {
-	
+	void Update () 
+	{
 	}
 }

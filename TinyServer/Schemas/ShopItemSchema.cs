@@ -8,20 +8,15 @@ using Mono.Data.Sqlite;
 
 namespace TinyServer.Schemas
 {
-	public class ShopItemSchema : Schema
+	public class ShopItemSchema : SchemaHelper<ShopItemSchema.Data>
 	{
-		public class ShopItemData : SchemaData
+		public class Data : SchemaData
 		{
 			public ColumnType<int> Uid = new ColumnType<int>(true);
 			public ColumnType<int> ShopType = new ColumnType<int>(true);
 			public ColumnType<int> ItemId = new ColumnType<int>();
 			public ColumnType<int> Num = new ColumnType<int>();
 			public ColumnType<float> Price = new ColumnType<float>();
-		}
-
-		protected override SchemaData GetSchemaData()
-		{
-			return new ShopItemData();
 		}
 
 		/// <summary>
@@ -41,7 +36,7 @@ namespace TinyServer.Schemas
 
 		public void AddShopItem(int uid, int shopType, int itemId, int num, float price)
 		{
-			ShopItemData d = new ShopItemData();
+			Data d = new Data();
 			d.Uid.Value = uid;
 			d.ShopType.Value = shopType;
 			d.ItemId.Value = itemId;

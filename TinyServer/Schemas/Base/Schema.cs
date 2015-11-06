@@ -10,7 +10,7 @@ namespace TinyServer.Schemas
 {
 	public abstract class Schema 
 	{
-		private List<SchemaData> m_datas = new List<SchemaData>();
+		protected List<SchemaData> m_datas = new List<SchemaData>();
 		protected List<SchemaData> DataList { get { return m_datas; } }
 
 		/// <summary>
@@ -381,54 +381,6 @@ namespace TinyServer.Schemas
 				}
 			}
 			return t.ToLower();
-		}
-
-		/// <summary>
-		/// 获取首条数据
-		/// </summary>
-		/// <returns>The first data.</returns>
-		/// <typeparam name="T">The 1st type parameter.</typeparam>
-		protected T GetFirstData<T>() where T : SchemaData
-		{
-			return GetData<T>(0);
-		}
-
-		/// <summary>
-		/// 获取最后一条数据
-		/// </summary>
-		/// <returns>The last data.</returns>
-		/// <typeparam name="T">The 1st type parameter.</typeparam>
-		protected T GetLastData<T>() where T : SchemaData
-		{
-			return GetData<T>(m_datas.Count - 1);
-		}
-
-		/// <summary>
-		/// 根据索引，获取指定下标的数据
-		/// </summary>
-		/// <returns>The data.</returns>
-		/// <param name="index">Index.</param>
-		/// <typeparam name="T">The 1st type parameter.</typeparam>
-		protected T GetData<T>(int index) where T : SchemaData
-		{
-			if (index < 0 || index >= m_datas.Count) {
-				return null;
-			}
-			return (T)m_datas[index];
-		}
-
-		/// <summary>
-		/// 获取所有数据
-		/// </summary>
-		/// <returns>The all data.</returns>
-		/// <typeparam name="T">The 1st type parameter.</typeparam>
-		protected List<T> GetAllData<T>() where T : SchemaData
-		{
-			List<T> t = new List<T>();
-			for (int i = 0; i < m_datas.Count; ++i) {
-				t.Add((T)m_datas[i]);	
-			}
-			return t;
 		}
 	}	
 }

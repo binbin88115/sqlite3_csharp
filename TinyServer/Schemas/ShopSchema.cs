@@ -10,9 +10,9 @@ using TinyServer.Schemas;
 
 namespace TinyServer.Schemas
 {
-	public class ShopSchema : Schema
+	public class ShopSchema : SchemaHelper<ShopSchema.Data>
 	{
-		public class ShopData : SchemaData
+		public class Data : SchemaData
 		{
 			public ColumnType<int> Uid = new ColumnType<int>(true);
 			public ColumnType<int> ShopType = new ColumnType<int>();
@@ -56,11 +56,6 @@ namespace TinyServer.Schemas
 			return true;
 		}
 
-		protected override SchemaData GetSchemaData()
-		{
-			return new ShopData();
-		}
-
 		/// <summary>
 		/// 查找表数据，在表数据为空的情况下，调用该接口
 		/// </summary>
@@ -68,7 +63,7 @@ namespace TinyServer.Schemas
 		protected override bool CreateAfterNotFound(params object[] objs)
 		{
 			if (objs.Length != 0) {
-				ShopData d = new ShopData();
+				Data d = new Data();
 				d.Uid.Value = (int)objs[0];
 				d.ShopType.Value = 1;
 				d.OpenTime.Value = 1000;

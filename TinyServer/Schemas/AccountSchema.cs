@@ -7,9 +7,9 @@ using Mono.Data.Sqlite;
 
 namespace TinyServer.Schemas
 {
-	public class AccountSchema : Schema
+	public class AccountSchema : SchemaHelper<AccountSchema.Data>
 	{
-		public class AccountData : SchemaData
+		public class Data : SchemaData
 		{
 			public ColumnType<string> AccountName = new ColumnType<string>();
 			public ColumnType<int> UserId = new ColumnType<int>();
@@ -23,7 +23,7 @@ namespace TinyServer.Schemas
 		{
 			// 这里测试，在找不到这个帐号的情况下，会创建一个新帐号
 			if (objs.Length != 0) {
-				AccountData data = new AccountData();
+				Data data = new Data();
 				data.AccountName.Value = objs[0].ToString();
 				data.UserId.Value = GetUsableUserId();
 				DataList.Add(data);
@@ -35,18 +35,13 @@ namespace TinyServer.Schemas
 			return false;
 		}
 
-		protected override SchemaData GetSchemaData()
-		{
-			return new AccountData();
-		}
-
 		/// <summary>
 		/// 获取用户ID
 		/// </summary>
 		/// <returns>The user identifier.</returns>
 		public int GetUserId()
 		{
-			AccountData d = GetFirstData<AccountData>();	
+			Data d = GetFirstData();	
 			if (d != null) {
 				return d.UserId.Value;
 			}

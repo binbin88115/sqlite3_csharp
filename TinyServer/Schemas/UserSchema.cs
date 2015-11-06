@@ -8,9 +8,9 @@ using Mono.Data.Sqlite;
 
 namespace TinyServer.Schemas
 {
-	public class UserSchema : Schema
+	public class UserSchema : SchemaHelper<UserSchema.Data>
 	{
-		public class UserData : SchemaData
+		public class Data : SchemaData
 		{
 			// 传入true参数，标识这个字段在SQLITE语句中充当WHERE语句的参数
 			public ColumnType<int> Uid = new ColumnType<int>(true);
@@ -27,7 +27,7 @@ namespace TinyServer.Schemas
 		protected override bool CreateAfterNotFound(params object[] objs)
 		{
 			if (objs.Length != 0) {
-				UserData d = new UserData();
+				Data d = new Data();
 				d.Uid.Value = (int)objs[0];
 				d.Age.Value = 10;
 				d.Name.Value = "lansey";
@@ -40,15 +40,6 @@ namespace TinyServer.Schemas
 				}
 			}
 			return false;
-		}
-
-		/// <summary>
-		/// 返回该表的数据结构对象
-		/// </summary>
-		/// <returns>The schema data.</returns>
-		protected override SchemaData GetSchemaData()
-		{
-			return new UserData();
 		}
 
 		/// <summary>
@@ -67,7 +58,7 @@ namespace TinyServer.Schemas
 		/// <returns>The age.</returns>
 		public int GetAge()
 		{
-			UserData d = GetFirstData<UserData>();
+			Data d = GetFirstData();
 			if (d != null) {
 				return d.Age.Value;
 			}
@@ -80,7 +71,7 @@ namespace TinyServer.Schemas
 		/// <param name="age">Age.</param>
 		public void SetAge(int age)
 		{
-			UserData d = GetFirstData<UserData>();
+			Data d = GetFirstData();
 			if (d != null) {
 				d.Age.Value = age;
 			}
