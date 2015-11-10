@@ -18,6 +18,16 @@ namespace TinyServer.Schemas
 			public ColumnType<string> Name = new ColumnType<string>();
 			public ColumnType<string> Address = new ColumnType<string>();
 			public ColumnType<bool> Sex = new ColumnType<bool>();
+			public ColumnType<int> Height = new ColumnType<int>();
+
+			/// <summary>
+			/// 用于设置字段的初始值，该初始值为设置为表字段的默认值
+			/// </summary>
+			public Data()
+			{
+				Age.Value = 999;
+				Height.Value = 100;
+			}
 		}
 
 		/// <summary>

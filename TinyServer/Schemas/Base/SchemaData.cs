@@ -20,6 +20,13 @@ namespace TinyServer.Schemas
 		private StatusType m_status = StatusType.New;
 
 		/// <summary>
+		/// NOTE: 用于设置字段的初始值，该初始值会设置为表字段的默认值
+		/// </summary>
+		public SchemaData()
+		{
+		}
+
+		/// <summary>
 		/// 数据所处的状态
 		/// </summary>
 		/// <value>The status.</value>
@@ -144,8 +151,16 @@ namespace TinyServer.Schemas
 				if (builder.Length != 0) {
 					builder.Append(",");
 				}
+
+				PropertyInfo piValue = fi.FieldType.GetProperty("Value");
+				object value = piValue.GetValue(fi.GetValue(this), null);
+				string dbValue  = "";
+				if (value != null) {
+					dbValue = value.ToString();
+				}
+
 				builder.AppendFormat("'{0}' {1} NOT NULL DEFAULT {2}", fi.Name, SchemaData.GetDbType(typeName),
-					SchemaData.GetDbDefaultValue(typeName));
+					SchemaData.GetDbDefaultValue(typeName, dbValue));
 			}
 
 			builder.Insert(0, String.Format("CREATE TABLE IF NOT EXISTS '{0}' (", schemaName));
@@ -378,22 +393,20 @@ namespace TinyServer.Schemas
 		/// </summary>
 		/// <returns>The db default value.</returns>
 		/// <param name="codeType">代码类型</param>
-		public static string GetDbDefaultValue(string codeType)
+		public static string GetDbDefaultValue(string codeType, string codeValue)
 		{
 			if (codeType == typeof(byte).Name
 				|| codeType == typeof(short).Name
 				|| codeType == typeof(int).Name
-				|| codeType == typeof(long).Name) {
-				return "0";
+				|| codeType == typeof(long).Name
+				|| codeType == typeof(float).Name
+				|| codeType == typeof(double).Name) {
+				return codeValue;
 			}
 			else if (codeType == typeof(bool).Name) {
-				return "0";
+				return codeValue == "True" ? "1" : "0";
 			}
-			else if (codeType == typeof(float).Name
-				|| codeType == typeof(double).Name) {
-				return "0.0";
-			}
-			return "''";
+			return String.Format("'{0}'", codeValue);
 		}
 
 		/// <summary>

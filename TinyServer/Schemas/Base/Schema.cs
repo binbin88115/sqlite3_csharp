@@ -32,7 +32,7 @@ namespace TinyServer.Schemas
 		public virtual bool Init()
 		{
 			if (IsCreated()) {
-				return true;
+				return Alter();
 			}
 
 			SchemaData template = GetSchemaData();
@@ -61,7 +61,7 @@ namespace TinyServer.Schemas
 		/// 初始化子表结构.
 		/// </summary>
 		/// <returns><c>true</c>, if sub schemas was inited, <c>false</c> otherwise.</returns>
-		protected virtual bool InitSubSchemas()
+		protected bool InitSubSchemas()
 		{
 			SchemaData template = GetSchemaData();
 			if (template == null) {
@@ -92,6 +92,100 @@ namespace TinyServer.Schemas
 		protected virtual bool CreateAfterInited()
 		{
 			return true;
+		}
+
+		/// <summary>
+		/// 用于动态添加表字段
+		/// </summary>
+		protected bool Alter()
+		{
+			List<string> columns = new List<string>();
+			try {
+				SqliteCommand cmd = GetConnection().CreateCommand();
+				cmd.CommandText = String.Format("SELECT * FROM {0} LIMIT 0", GetSchemaName());
+				SqliteDataReader dr = cmd.ExecuteReader();
+				if (dr.FieldCount == 0) {
+					return false;
+				}
+				
+				for (int i = 0; i < dr.FieldCount; ++i) {
+					columns.Add(dr.GetName(i));
+				}
+			}
+			catch (Exception ex) {
+				Debug.Log(ex.Message);
+				return false;
+			}
+
+			SchemaData template = GetSchemaData();
+			if (template == null) {
+				return false;
+			}
+
+			List<FieldInfo> fields = new List<FieldInfo>();
+			FieldInfo[] fis = template.GetType().GetFields();
+			for (int i = 0; i < fis.Length; ++i) {
+				FieldInfo fi = fis[i];
+				if (columns.Find(a=>a == fi.Name) == null) {
+					fields.Add(fi);
+				}
+			}
+			if (fields.Count == 0) {
+				return true;
+			}
+
+			// 生成SQL语句
+			List<string> sqls = new List<string>();
+			for (int i = 0; i < fields.Count; ++i) {
+				FieldInfo fi = fields[i];
+
+				MethodInfo miGetTypeName = fi.FieldType.GetMethod("GetTypeName");
+				string typeName = (string)miGetTypeName.Invoke(fi.GetValue(template), null);
+				if (!SchemaData.IsBuiltInType(typeName)) {
+					continue;
+				}
+
+				StringBuilder builder = new StringBuilder();
+				builder.AppendFormat("ALTER TABLE {0} ADD {1} {2} DEFAULT ", GetSchemaName(), fi.Name, SchemaData.GetDbType(typeName));
+
+				PropertyInfo piValue = fi.FieldType.GetProperty("Value");
+				object value = piValue.GetValue(fi.GetValue(template), null);
+
+				string dbValue  = "";
+				if (value != null) {
+					dbValue = value.ToString();
+				}
+
+				string dbType = SchemaData.GetDbType(typeName);
+				if (dbType == "TEXT") {
+					builder.AppendFormat("'{0}'", SchemaData.GetDbValue(typeName, dbValue));
+				}
+				else {
+					builder.AppendFormat("{0}", SchemaData.GetDbValue(typeName, dbValue));
+				}
+
+				sqls.Add(builder.ToString());
+			}
+
+			// 处理SQLITE语句
+			if (sqls.Count != 0) {
+				SqliteCommand cmd = GetConnection().CreateCommand();
+				SqliteTransaction tran = GetConnection().BeginTransaction();
+				cmd.Transaction = tran;
+				try {
+					for (int i = 0; i < sqls.Count; ++i) {
+						cmd.CommandText = sqls[i];
+						cmd.ExecuteNonQuery();
+					}
+					tran.Commit();
+				}
+				catch (Exception ex) {
+					Debug.Log(ex.Message);
+					tran.Rollback();
+					return false;
+				}	
+			}	
+			return true;			
 		}
 
 		/// <summary>
